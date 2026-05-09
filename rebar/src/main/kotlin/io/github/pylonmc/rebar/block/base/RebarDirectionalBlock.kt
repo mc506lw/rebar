@@ -36,7 +36,7 @@ interface RebarDirectionalBlock : Keyed {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarDirectionalBlock) {
-                directionalBlocks[block] = event.pdc.get(directionalBlockKey, RebarSerializers.BLOCK_FACE)
+                event.pdc.get(directionalBlockKey, RebarSerializers.BLOCK_FACE)?.let { directionalBlocks[block] = it }
             }
         }
 

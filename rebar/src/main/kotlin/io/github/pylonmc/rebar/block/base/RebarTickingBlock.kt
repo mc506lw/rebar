@@ -95,8 +95,7 @@ interface RebarTickingBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarTickingBlock) {
-                tickingBlocks[block] = event.pdc.get(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA)
-                    ?: error("Ticking block data not found for ${block.key}")
+                event.pdc.get(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA)?.let { tickingBlocks[block] = it }
             }
         }
 

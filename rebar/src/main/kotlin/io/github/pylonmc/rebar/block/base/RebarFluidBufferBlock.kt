@@ -162,7 +162,7 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarFluidBufferBlock) {
-                bufferFluidBlocks[block] = event.pdc.get(fluidBuffersKey, fluidBuffersType)?.toMutableMap()
+                event.pdc.get(fluidBuffersKey, fluidBuffersType)?.toMutableMap()?.let { bufferFluidBlocks[block] = it }
             }
         }
 

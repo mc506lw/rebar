@@ -191,7 +191,7 @@ interface RebarFluidTank : RebarFluidBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarFluidTank) {
-                fluidTankBlocks[block] = event.pdc.get(fluidTankKey, RebarSerializers.FLUID_TANK_DATA)
+                event.pdc.get(fluidTankKey, RebarSerializers.FLUID_TANK_DATA)?.let { fluidTankBlocks[block] = it }
             }
         }
 

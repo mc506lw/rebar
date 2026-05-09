@@ -648,7 +648,7 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarSimpleMultiblock) {
-                simpleMultiblocks[block] = event.pdc.get(simpleMultiblockKey, RebarSerializers.SIMPLE_MULTIBLOCK_DATA)
+                event.pdc.get(simpleMultiblockKey, RebarSerializers.SIMPLE_MULTIBLOCK_DATA)?.let { simpleMultiblocks[block] = it }
             }
         }
 

@@ -288,7 +288,7 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarCargoBlock) {
-                cargoBlocks[block] = event.pdc.get(cargoBlockKey, RebarSerializers.CARGO_BLOCK_DATA)
+                event.pdc.get(cargoBlockKey, RebarSerializers.CARGO_BLOCK_DATA)?.let { cargoBlocks[block] = it }
             }
         }
 
