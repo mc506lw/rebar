@@ -5,6 +5,7 @@ package io.github.pylonmc.rebar.i18n.packet
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.util.editData
 import io.netty.channel.ChannelDuplexHandler
 import io.netty.channel.ChannelHandlerContext
@@ -21,11 +22,7 @@ import net.minecraft.util.HashOps
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.display.*
 import org.bukkit.craftbukkit.inventory.CraftItemStack
-import java.lang.invoke.MethodHandles
-import java.util.Optional
 import java.util.logging.Level
-import kotlin.jvm.javaClass
-import kotlin.let
 
 
 // Much inspiration has been taken from https://github.com/GuizhanCraft/SlimefunTranslation
@@ -249,9 +246,10 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
     private fun reset(stack: ItemStack): ItemStack {
         if (stack.isEmpty) return stack
         val bukkitStack = CraftItemStack.asCraftMirror(stack)
-        val item = RebarItem.fromStack(bukkitStack) ?: return stack
-        val prototype = item.schema.getItemStack()
+        val schema = RebarItemSchema.fromStack(bukkitStack) ?: return stack
+        val prototype = schema.getItemStack()
         prototype.copyDataFrom(bukkitStack) { it != DataComponentTypes.ITEM_NAME && it != DataComponentTypes.LORE }
+        prototype.editPersistentDataContainer { it.remove(PlayerTranslationHandler.FOOTER_APPENDED) }
         prototype.amount = bukkitStack.amount
         val translatedPrototype = prototype.clone()
         try {

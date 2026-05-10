@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import org.bukkit.event.Event
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerInteractEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarBlockInteractor : RebarCooldownable {
     /**
@@ -16,12 +17,13 @@ interface RebarBlockInteractor : RebarCooldownable {
      */
     fun onUsedToClickBlock(event: PlayerInteractEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedToClickBlock(event: PlayerInteractEvent, priority: EventPriority) {
             if (!event.hasBlock()) return
-            val rebarItem = event.item?.let { RebarItem.fromStack(it) } ?: return
-            if (rebarItem !is RebarBlockInteractor) return
+            val rebarItem = event.item?.let { RebarItem.fromStack(it, RebarBlockInteractor::class.java) } ?: return
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 event.setUseItemInHand(Event.Result.DENY)
                 return

@@ -21,6 +21,7 @@ import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.content.fluid.*
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.culling.BlockCullingEngine
+import io.github.pylonmc.rebar.entity.ConfettiCreeperListener
 import io.github.pylonmc.rebar.entity.EntityListener
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
@@ -61,6 +62,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Display
 import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.ItemDisplay
@@ -162,6 +164,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(RebarTickingEntity, this)
         pm.registerEvents(ChunkScope, this)
         pm.registerEvents(PlayerScope, this)
+        ConfettiCreeperListener.register(this, pm)
 
         // Rebar Blocks
         BlockListener.register(this, pm)
@@ -178,7 +181,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarGrowable.register(this, pm)
         RebarCauldron.register(this, pm)
         RebarSign.register(this, pm)
-        RebarTrialVault.register(this, pm)
+        RebarVault.register(this, pm)
         RebarLeaf.register(this, pm)
         RebarTargetBlock.register(this, pm)
         RebarComposter.register(this, pm)
@@ -188,7 +191,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarEnchantingTable.register(this, pm)
         RebarRedstoneBlock.register(this, pm)
         RebarInteractBlock.register(this, pm)
-        RebarSneakableBlock.register(this, pm)
+        RebarSneakBlock.register(this, pm)
         RebarJobBlock.register(this, pm)
         RebarJumpBlock.register(this, pm)
         RebarUnloadBlock.register(this, pm)
@@ -292,8 +295,12 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarItem.register<RebarGuide>(RebarGuide.STACK)
         RebarGuide.hideItem(RebarGuide.KEY)
 
-        RebarEntity.register<Display, RebarSimpleMultiblock.MultiblockGhostBlock>(
-            RebarSimpleMultiblock.MultiblockGhostBlock.KEY,
+        RebarEntity.register<BlockDisplay, RebarGhostBlockHolder.VanillaGhostBlock>(
+            RebarGhostBlockHolder.VanillaGhostBlock.KEY,
+        )
+
+        RebarEntity.register<ItemDisplay, RebarGhostBlockHolder.RebarGhostBlock>(
+            RebarGhostBlockHolder.RebarGhostBlock.KEY,
         )
 
         RebarEntity.register<ItemDisplay, FluidEndpointDisplay>(FluidEndpointDisplay.KEY)

@@ -7,15 +7,17 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockDispenseEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarDispensable {
     fun onDispense(event: BlockDispenseEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onDispense(event: BlockDispenseEvent, priority: EventPriority) {
-            val rebarItem = RebarItem.fromStack(event.item)
-            val dispensable = rebarItem as? RebarDispensable ?: return
+            val rebarItem = RebarItem.fromStack(event.item, RebarDispensable::class.java)
+            val dispensable = rebarItem as? RebarItem ?: return
 
             try {
                 MultiHandlers.handleEvent(dispensable, "onDispense", event, priority)

@@ -82,15 +82,15 @@ object BlockStorage : Listener {
 
     @JvmStatic
     val loadedBlockPositions: Set<BlockPosition>
-        get() = lockBlockRead { blocks.keys }
+        get() = lockBlockRead { blocks.keys.toSet() }
 
     @JvmStatic
     val loadedChunks: Set<ChunkPosition>
-        get() = lockBlockRead { blocksByChunk.keys }
+        get() = lockBlockRead { blocksByChunk.keys.toSet() }
 
     @JvmStatic
     val loadedRebarBlocks: Collection<RebarBlock>
-        get() = lockBlockRead { blocks.values }
+        get() = lockBlockRead { blocks.values.toSet() }
 
     /**
      * Returns the Rebar block at the given [blockPosition], or null if the block does not exist
@@ -189,7 +189,7 @@ object BlockStorage : Listener {
     @JvmStatic
     fun getByChunk(chunkPosition: ChunkPosition): Collection<RebarBlock> {
         require(chunkPosition.isLoaded) { "You can only get Rebar blocks in loaded chunks" }
-        return lockBlockRead { blocksByChunk[chunkPosition].orEmpty() }
+        return lockBlockRead { blocksByChunk[chunkPosition].orEmpty().toSet() }
     }
 
     /**
@@ -199,7 +199,7 @@ object BlockStorage : Listener {
     fun getByKey(key: NamespacedKey): Collection<RebarBlock> =
         if (RebarRegistry.BLOCKS.contains(key)) {
             lockBlockRead {
-                blocksByKey[key].orEmpty()
+                blocksByKey[key].orEmpty().toSet()
             }
         } else {
             emptySet()
@@ -215,7 +215,7 @@ object BlockStorage : Listener {
 
     /**
      * Returns whether the block at [block] is a Rebar block.
-     * Returns false if the chunk at [blockPosition] is not loaded.
+     * Returns false if the chunk at [block] is not loaded.
      */
     @JvmStatic
     fun isRebarBlock(block: Block): Boolean =
@@ -223,7 +223,7 @@ object BlockStorage : Listener {
 
     /**
      * Returns whether the block at [location] is a Rebar block
-     * Returns false if the chunk at [blockPosition] is not loaded.
+     * Returns false if the chunk at [location] is not loaded.
      */
     @JvmStatic
     fun isRebarBlock(location: Location): Boolean =
@@ -627,7 +627,7 @@ object BlockStorage : Listener {
      * Turns the block into a [PhantomBlock] which represents a block which has failed for some reason
      */
     @JvmSynthetic
-    internal fun makePhantom(block: RebarBlock) = lockBlockWrite {
+    internal fun makePhantom(block: RebarBlock): Unit = lockBlockWrite {
         BlockCullingEngine.remove(block)
         RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
         val pdc = RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext) ?: return
@@ -638,7 +638,6 @@ object BlockStorage : Listener {
         blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
         blocksByChunk[block.block.chunk.position]!!.remove(block)
         blocksByChunk[phantomBlock.block.chunk.position]!!.add(phantomBlock)
-        Unit
     }
 
     @JvmSynthetic

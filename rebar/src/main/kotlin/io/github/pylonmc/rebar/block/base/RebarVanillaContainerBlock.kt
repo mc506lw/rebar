@@ -11,6 +11,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.inventory.InventoryMoveItemEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.inventory.BlockInventoryHolder
+import org.jetbrains.annotations.ApiStatus
 
 /**
  * Represents blocks which can naturally store items such as chests and hoppers.
@@ -20,10 +21,11 @@ interface RebarVanillaContainerBlock {
     fun onItemMoveTo(event: InventoryMoveItemEvent, priority: EventPriority) {}
     fun onItemMoveFrom(event: InventoryMoveItemEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onInventoryOpen(event: InventoryOpenEvent, priority: EventPriority) {
-            val holder = event.inventory.holder
+            val holder = event.inventory.getHolder(false)
             if (holder is Container) {
                 val rebarBlock = BlockStorage.get(holder.block)
                 if (rebarBlock is RebarVanillaContainerBlock) {

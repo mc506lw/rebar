@@ -12,6 +12,7 @@ import io.papermc.paper.event.entity.EntityToggleSitEvent
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityToggleGlideEvent
 import org.bukkit.event.entity.EntityToggleSwimEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarMovingEntity {
     fun onMove(event: EntityMoveEvent, priority: EventPriority) {}
@@ -21,9 +22,30 @@ interface RebarMovingEntity {
     fun onToggleGlide(event: EntityToggleGlideEvent, priority: EventPriority) {}
     fun onToggleSit(event: EntityToggleSitEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
+        /**
+         * Because the EntityMoveEvent is often called hundreds if not thousands of times a tick, the overhead of checking
+         * if an entity is a RebarEntity stacks up. Every time the event is called, we process the event 6
+         * times (1 for each priority). To avoid this we have a variable that stores the last EntityMoveEvent that was not a RebarEntity
+         * and if the current event is the same as that one, we ignore it.
+         *
+         * EntityMoveEvent is a sync event so there should be no issues with concurrency.
+         *
+         * Ideally this is a temporary measure, we should try and find a better way to handle this (maybe optimize entity lookup if possible)
+         * and abstract it so other high frequency events can be handled to avoid the same issue.
+         */
+        private var ignoredMoveEvent: EntityMoveEvent? = null
+
         @UniversalHandler
         private fun onMove(event: EntityMoveEvent, priority: EventPriority) {
+            if (event == ignoredMoveEvent) {
+                if (priority == EventPriority.MONITOR) {
+                    ignoredMoveEvent = null
+                }
+                return
+            }
+
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarMovingEntity) {
                 try {
@@ -31,6 +53,8 @@ interface RebarMovingEntity {
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
+            } else {
+                ignoredMoveEvent = event
             }
         }
 
