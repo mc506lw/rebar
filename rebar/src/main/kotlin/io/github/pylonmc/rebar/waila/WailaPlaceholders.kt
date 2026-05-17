@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.waila
 
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.util.plainText
+import io.github.pylonmc.rebar.waila.WailaPlaceholders.placeholders
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import net.kyori.adventure.bossbar.BossBar
 import org.bukkit.OfflinePlayer
@@ -19,6 +20,7 @@ object WailaPlaceholders : PlaceholderExpansion() {
             "plain_text" -> waila.lastText?.plainText ?: ""
             "color" -> waila.lastColor?.let { BossBar.Color.NAMES.key(it) } ?: ""
             "overlay" -> waila.lastOverlay?.let { BossBar.Overlay.NAMES.key(it) } ?: ""
+            "progress" -> waila.lastProgress?.toString() ?: ""
             else -> null
         }
     }

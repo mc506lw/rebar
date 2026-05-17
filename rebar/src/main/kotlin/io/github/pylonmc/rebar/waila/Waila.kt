@@ -112,6 +112,7 @@ class Waila private constructor(private val player: Player, playerConfig: Player
         lastText = null
         lastColor = null
         lastOverlay = null
+        lastProgress = null
         wasVisible = false
     }
 
