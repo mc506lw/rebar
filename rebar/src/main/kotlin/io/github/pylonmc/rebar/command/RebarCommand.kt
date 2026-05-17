@@ -20,17 +20,16 @@ import io.github.pylonmc.rebar.gametest.GameTestConfig
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
 import io.github.pylonmc.rebar.item.research.addResearch
 import io.github.pylonmc.rebar.item.research.hasResearch
 import io.github.pylonmc.rebar.item.research.removeResearch
 import io.github.pylonmc.rebar.metrics.RebarMetrics
-import io.github.pylonmc.rebar.util.ConfettiParticle
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.util.ConfettiParticle
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.vanillaDisplayName
@@ -57,6 +56,9 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
+import kotlin.math.min
+import org.bukkit.util.Vector
 import kotlin.reflect.typeOf
 import io.papermc.paper.math.BlockPosition as PaperBlockPosition
 
@@ -87,21 +89,26 @@ private val guide = buildCommand("guide") {
 
 private val give = buildCommand("give") {
     argument("players", ArgumentTypes.players()) {
-        argument("item", RegistryCommandArgument(RebarRegistry.ITEMS)) {
+        argument("item", DualItemRegistryCommandArgument) {
             // Why does Brigadier not support default values for arguments?
             // https://github.com/Mojang/brigadier/issues/110
 
             fun givePlayers(context: CommandContext<CommandSourceStack>, amount: Int) {
-                val item = context.getArgument<RebarItemSchema>("item")
+                val item = context.getArgument<ItemStack>("item")
                 val players = context.getArgument<List<Player>>("players")
                 val singular = players.size == 1
                 for (player in players) {
-                    player.inventory.addItem(item.getItemStack().asQuantity(amount))
+                    var remaining = amount
+                    while (remaining > 0) {
+                        val giving = item.asQuantity(min(remaining, item.maxStackSize))
+                        remaining -= giving.amount
+                        player.give(giving)
+                    }
                 }
                 context.source.sender.sendVanillaFeedback(
                     "give.success." + if (singular) "single" else "multiple",
                     Component.text(amount),
-                    item.getOriginalTemplate().vanillaDisplayName(),
+                    item.vanillaDisplayName(),
                     if (singular) players[0].name() else Component.text(players.size)
                 )
             }
@@ -420,26 +427,65 @@ private val exposeRecipeConfig = buildCommand("exposerecipeconfig") {
 private val confetti = buildCommand("confetti") {
     argument("amount", IntegerArgumentType.integer(1)) {
         permission("rebar.command.confetti")
-        executesWithPlayer { player ->
+        executes { _ ->
             RebarMetrics.onCommandRun("/rb confetti")
-            ConfettiParticle.spawnMany(player.location, IntegerArgumentType.getInteger(this, "amount")).run()
+            ConfettiParticle.spawnMany(source.location, IntegerArgumentType.getInteger(this, "amount")).get()
         }
         argument("speed", DoubleArgumentType.doubleArg(0.0)) {
             permission("rebar.command.confetti")
-            executesWithPlayer { player ->
+            executes { _ ->
                 RebarMetrics.onCommandRun("/rb confetti")
-                ConfettiParticle.spawnMany(player.location, IntegerArgumentType.getInteger(this, "amount"), DoubleArgumentType.getDouble(this, "speed")).run()
+                ConfettiParticle.spawnMany(source.location, IntegerArgumentType.getInteger(this, "amount"), DoubleArgumentType.getDouble(this, "speed")).get()
             }
             argument("lifetime", IntegerArgumentType.integer(1)) {
                 permission("rebar.command.confetti")
-                executesWithPlayer { player ->
+                executes { _ ->
                     RebarMetrics.onCommandRun("/rb confetti")
                     ConfettiParticle.spawnMany(
-                        player.location,
+                        source.location,
                         IntegerArgumentType.getInteger(this, "amount"),
                         DoubleArgumentType.getDouble(this, "speed"),
                         IntegerArgumentType.getInteger(this, "lifetime")
-                    ).run()
+                    ).get()
+                }
+                argument("direction", ArgumentTypes.finePosition()) {
+                    permission("rebar.command.confetti")
+                    executes { _ ->
+                        RebarMetrics.onCommandRun("/rb confetti")
+                        val velocity = getArgument("direction", FinePositionResolver::class.java).resolve(source).toVector()
+                            .normalize().multiply(DoubleArgumentType.getDouble(this, "speed"))
+                        for (i in 1..IntegerArgumentType.getInteger(this, "amount")) {
+                            ConfettiParticle(
+                                source.location,
+                                velocity,
+                                IntegerArgumentType.getInteger(this, "lifetime"),
+                                ConfettiParticle.randomMaterial()
+                            )
+                        }
+                    }
+                    argument("spread", DoubleArgumentType.doubleArg(0.0)) {
+                        permission("rebar.command.confetti")
+                        executes { _ ->
+                            RebarMetrics.onCommandRun("/rb confetti")
+                            val direction = getArgument("direction", FinePositionResolver::class.java).resolve(source).toVector()
+                            val speed = DoubleArgumentType.getDouble(this, "speed")
+                            val spread = DoubleArgumentType.getDouble(this, "spread")
+                            for (i in 1..IntegerArgumentType.getInteger(this, "amount")) {
+                                ConfettiParticle(
+                                    source.location,
+                                    direction.clone().add(
+                                        Vector(
+                                            (Math.random() - 0.5) * spread,
+                                            (Math.random() - 0.5) * spread,
+                                            (Math.random() - 0.5) * spread
+                                        )
+                                    ).normalize().multiply(speed),
+                                    IntegerArgumentType.getInteger(this, "lifetime"),
+                                    ConfettiParticle.randomMaterial()
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
