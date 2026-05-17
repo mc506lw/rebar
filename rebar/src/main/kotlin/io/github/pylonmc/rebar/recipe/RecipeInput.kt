@@ -25,10 +25,10 @@ sealed interface RecipeInput {
 
         fun matches(itemStack: ItemStack?): Boolean {
             if (itemStack == null || itemStack.amount < amount) return false
-            return contains(itemStack)
+            return matchesIgnoringAmount(itemStack)
         }
 
-        operator fun contains(itemStack: ItemStack?): Boolean = itemStack != null && ItemTypeWrapper(itemStack) in items
+        fun matchesIgnoringAmount(itemStack: ItemStack?): Boolean = itemStack != null && ItemTypeWrapper(itemStack) in items
     }
 
     @JvmRecord
