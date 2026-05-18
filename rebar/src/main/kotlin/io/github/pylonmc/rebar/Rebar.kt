@@ -43,8 +43,10 @@ import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.item.base.VanillaAnvilItem
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
+import io.github.pylonmc.rebar.waila.WailaPlaceholders
 import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import kotlinx.coroutines.CoroutineScope
@@ -179,6 +181,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarFlowerPot.register(this, pm)
         RebarVanillaContainerBlock.register(this, pm)
         RebarHopper.register(this, pm)
+        RebarFire.register(this, pm)
         RebarCargoBlock.register(this, pm)
         RebarCopperBlock.register(this, pm)
         RebarEntityChangedBlock.register(this, pm)
@@ -194,11 +197,15 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarInteractor.register(this, pm)
         RebarItemDamageable.register(this, pm)
         RebarItemEntityInteractor.register(this, pm)
+        RebarJoinHandler.register(this, pm)
         RebarLingeringPotion.register(this, pm)
         RebarSplashPotion.register(this, pm)
         RebarTool.register(this, pm)
         RebarWeapon.register(this, pm)
+        VanillaAnvilItem.register(this, pm)
         VanillaCookingFuel.register(this, pm)
+        RebarPickupable.register(this, pm)
+        RebarDroppable.register(this, pm)
 
         // Rebar Entities
         EntityListener.register(this, pm)
@@ -238,6 +245,9 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         if (RebarConfig.WailaConfig.ENABLED) {
             pm.registerEvents(Waila, this)
+            if (pm.getPlugin("PlaceholderAPI") != null) {
+                WailaPlaceholders.register()
+            }
         }
 
         if (RebarConfig.BlockTextureConfig.ENABLED) {
