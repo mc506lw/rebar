@@ -220,6 +220,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarInteractor.register(this, pm)
         RebarItemDamageable.register(this, pm)
         RebarItemEntityInteractor.register(this, pm)
+        RebarJoinHandler.register(this, pm)
         RebarLingeringPotion.register(this, pm)
         RebarSplashPotion.register(this, pm)
         RebarTool.register(this, pm)
