@@ -38,7 +38,7 @@ jobs:
           ref: rebar
 
       - name: Publish Dokka to Maven local
-        run: ./gradlew publishToMavenLocal -Pversion=2.1.0-rebar-SNAPSHOT
+        run: ./gradlew publishToMavenLocal -Pversion=2.3.0-rebar-SNAPSHOT
 
       - name: Checkout
         uses: actions/checkout@v5
