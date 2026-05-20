@@ -18,8 +18,10 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.HashOps
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemStackTemplate
+import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.display.*
 import org.bukkit.craftbukkit.inventory.CraftItemStack
+import java.util.Optional
 import java.util.logging.Level
 import kotlin.jvm.optionals.getOrNull
 
@@ -85,9 +87,9 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                             handleRecipeDisplay(it.contents.display),
                             it.contents.group,
                             it.contents.category,
-                            it.contents.craftingRequirements.apply {
-                                getOrNull()?.forEach { ingredient -> ingredient.itemStacks()?.forEach { item -> translate(item) } }
-                            }
+                            Optional.of(it.contents.craftingRequirements.getOrNull()?.map { ingredient ->
+                                ingredient.itemStacks()?.let { stacks -> Ingredient.ofStacks(stacks.map { item -> translate(item.copy()) }) } ?: ingredient
+                            } ?: mutableListOf())
                         ),
                         it.flags
                     )
@@ -229,8 +231,8 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
         }
     }
 
-    private fun translate(item: ItemStack) {
-        if (item.isEmpty) return
+    private fun translate(item: ItemStack): ItemStack {
+        if (item.isEmpty) return item
         try {
             handler.handleItem(CraftItemStack.asCraftMirror(item))
         } catch (e: Throwable) {
@@ -242,6 +244,7 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                 e
             )
         }
+        return item
     }
 
     companion object {
