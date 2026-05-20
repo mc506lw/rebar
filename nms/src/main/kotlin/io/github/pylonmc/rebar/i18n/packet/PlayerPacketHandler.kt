@@ -8,6 +8,7 @@ import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.netty.channel.ChannelDuplexHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelPromise
+import net.minecraft.commands.arguments.SlotsArgument.slots
 import net.minecraft.network.HashedPatchMap
 import net.minecraft.network.HashedStack
 import net.minecraft.network.protocol.Packet
@@ -87,9 +88,13 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                             handleRecipeDisplay(it.contents.display),
                             it.contents.group,
                             it.contents.category,
-                            Optional.of(it.contents.craftingRequirements.getOrNull()?.map { ingredient ->
-                                ingredient.itemStacks()?.let { stacks -> Ingredient.ofStacks(stacks.map { item -> translate(item.copy()) }) } ?: ingredient
-                            } ?: mutableListOf())
+                            it.contents.craftingRequirements.map { ingredients ->
+                                ingredients.map { ingredient ->
+                                    ingredient.itemStacks()?.let { stacks ->
+                                        Ingredient.ofStacks(stacks.map { item -> translate(item.copy()) })
+                                    } ?: ingredient
+                                }
+                            }
                         ),
                         it.flags
                     )
