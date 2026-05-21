@@ -75,8 +75,7 @@ class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, Flu
 
         val marker = BlockStorage.getAs(FluidIntersectionMarker::class.java, entity.location.block) ?: return
         val modelData = CustomModelData.customModelData()
-        modelData.addString("fluid_point_display:${FluidPointType.INTERSECTION.name.lowercase()}")
-        modelData.addString("fluid_point_display:${marker.pipe.key}")
+        modelData.addString("fluid_point_intersection:${marker.pipe.key}")
 
         val from = this.entity.location
         for (face in IMMEDIATE_FACES) {
@@ -131,7 +130,7 @@ class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, Flu
                     .scale(FluidEndpointDisplay.POINT_SIZE)
                 )
                 .itemStack(ItemStackBuilder.of(FluidPointType.INTERSECTION.material)
-                    .addCustomModelDataString("fluid_point_display:${FluidPointType.INTERSECTION.name.lowercase()}")
+                    .addCustomModelDataString("fluid_point_intersection:none")
                 )
                 .build(block.location.toCenterLocation())
         }
