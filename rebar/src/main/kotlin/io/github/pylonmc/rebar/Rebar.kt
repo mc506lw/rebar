@@ -135,7 +135,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(RebarDirectionalBlock, this)
         pm.registerEvents(FluidPipePlacementService, this)
         pm.registerEvents(RebarTickingBlock, this)
-        pm.registerEvents(RebarGuide, this)
+        pm.registerEvents(RebarGuide.GuideListener, this)
         pm.registerEvents(RebarLogisticBlock, this)
         pm.registerEvents(CargoRoutes, this)
         pm.registerEvents(CargoDuct, this)

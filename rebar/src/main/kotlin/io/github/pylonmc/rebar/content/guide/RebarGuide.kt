@@ -57,7 +57,7 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         }
     }
 
-    companion object : Listener {
+    companion object {
 
         @JvmField
         val KEY = rebarKey("guide")
@@ -154,17 +154,6 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         @JvmStatic
         val mainSettingsButton = PageButton(Material.COMPARATOR, mainSettingsPage)
 
-        /**
-         * Lowest priority to avoid another plugin saving the players data or doing something
-         * to make the player considered as having played before, before we receive the event
-         */
-        @EventHandler(priority = EventPriority.LOWEST)
-        private fun join(event: PlayerJoinEvent) {
-            if (RebarConfig.REBAR_GUIDE_ON_FIRST_JOIN && !event.player.hasPlayedBefore()) {
-                event.player.give(STACK.clone())
-            }
-        }
-
         @JvmStatic
         fun ingredientsPage(input: FluidOrItem) = ItemIngredientsPage(input)
 
@@ -239,6 +228,20 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
                 rootPage.open(player)
             } else {
                 history.removeLast().open(player)
+            }
+        }
+    }
+
+    internal object GuideListener : Listener {
+
+        /**
+         * Lowest priority to avoid another plugin saving the players data or doing something
+         * to make the player considered as having played before, before we receive the event
+         */
+        @EventHandler(priority = EventPriority.LOWEST)
+        private fun join(event: PlayerJoinEvent) {
+            if (RebarConfig.REBAR_GUIDE_ON_FIRST_JOIN && !event.player.hasPlayedBefore()) {
+                event.player.give(STACK.clone())
             }
         }
     }
